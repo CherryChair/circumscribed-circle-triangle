@@ -41,6 +41,7 @@ e_y:	.word 0
 
 filename:	.asciiz "in.bmp"
 filename_w:	.asciiz "out.bmp"
+file_size:	.word 0
 file_h:	.word 1024
 file_w: .word 1024
 width_msg: .asciiz "Width of in.bmp is: "
@@ -153,16 +154,28 @@ dont_pad_file:
 	syscall
 	
 	
-	#znajdujemy liczbê bajtów do zaalokowania
-	lw $t1, file_h
-	lw $t2, file_w
-	mul $t0, $t1, $t2
-	div $t0, $t0, 8
-	addi $t0, $t0, 62
+	#szukamy wielkoœci pliku
+	la $t0, file_header
+	addiu $t0, $t0, 2
+	lbu $t1, ($t0)
+	move $a0, $t1
+	addiu $t0, $t0, 1
+	lbu $t1, ($t0)
+	sll $t1, $t1, 8
+	or $a0, $t1, $a0
+	addiu $t0, $t0, 1
+	lbu $t1, ($t0)
+	sll $t1, $t1, 16
+	or $a0, $t1, $a0
+	addiu $t0, $t0, 1
+	lbu $t1, ($t0)
+	sll $t1, $t1, 24
+	or $a0, $t1, $a0
+	sw $a0, file_size
 	
 	#alokujemy bajty
 	li $v0, 9
-	move $a0, $t0
+	lw $a0, file_size
 	syscall
 	move $s7, $v0
 	
@@ -506,12 +519,7 @@ move_diag:
 
 
 end_program:
-	#liczymy iloœæ potrzebnych nam bajtów pliku
-	lw $t1, file_h
-	lw $t2, file_w
-	mul $t0, $t1, $t2
-	div $t0, $t0, 8
-	addi $t0, $t0, 62
+	
 	
 	
 	#tworzymy nowy plik do zapisu
@@ -526,7 +534,7 @@ end_program:
 	li $v0, 15
 	move $a0, $s2
 	la $a1, ($s7)
-	move $a2, $t0
+	lw $a2, file_size
 	syscall
 	move $s3, $v0
 	
