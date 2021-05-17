@@ -52,6 +52,7 @@ file_start: .word 0
 file_header:	.space 62
 error_input:	.asciiz "One of given point is out of bounds of in.bmp. Retaking the input.\n"
 error_circle:	.asciiz "!!!Circle point out of bounds of bmp file!!! Exiting program..."
+error_line:	.asciiz "Given points are on one line!!! Retaking the input.\n"
 	.text
 	.globl main
 	
@@ -308,6 +309,17 @@ find_center:
 	mul $t6, $t0, $t4	#a1b2
 	mul $t7, $t1, $t3	#a2b1
 	subu $t6, $t6, $t7	#a1b2-a2b1
+	bnez $t6, not_on_line
+	
+	li $v0, 4
+	la $a0, error_line
+	syscall
+	
+	b input_taking
+	
+not_on_line:
+
+	
 	mul $t7, $t2, $t3	#c1a2
 	mul $t8, $t0, $t5	#c2a1
 	subu $t7, $t7, $t8	#c1a2-c2a1
