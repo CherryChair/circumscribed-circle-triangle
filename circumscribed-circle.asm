@@ -289,9 +289,13 @@ sym_triangle:
 	mul $t1, $t5, $t7	#y1^2-y2^2
 	addu $t0, $t0, $t1	
 	sw $t0, c1
-	mul $t4, $t4, -2
+	#mul $t4, $t4, -2
+	sll $t4, $t4, 1
+	subu $t4, $zero, $t4
 	sw $t4, a1
-	mul $t5, $t5, -2
+	#mul $t5, $t5, -2
+	sll $t5, $t5, 1
+	subu $t5, $zero, $t5
 	sw $t5, b1
 
 	lw $t0, x1
@@ -306,9 +310,13 @@ sym_triangle:
 	mul $t1, $t5, $t7	#y1^2-y2^2
 	addu $t0, $t0, $t1	
 	sw $t0, c2
-	mul $t4, $t4, -2
+	#mul $t4, $t4, -2
+	sll $t4, $t4, 1
+	subu $t4, $zero, $t4
 	sw $t4, a2
-	mul $t5, $t5, -2
+	#mul $t5, $t5, -2
+	sll $t5, $t5, 1
+	subu $t5, $zero, $t5
 	sw $t5, b2
 
 #ze znalezionych wczeœniej równañ symetralnych trójk¹ta obliczamy œrodek ko³a opisanego
@@ -339,8 +347,10 @@ not_on_line:
 	mul $t8, $t2, $t4	#c1b2
 	mul $t9, $t1, $t5	#c2b1
 	subu $t8, $t9, $t8	#c2b1-c1b2
-	mul $t8, $t8, 2
-	mul $t7, $t7, 2
+	#mul $t8, $t8, 2
+	sll $t8, $t8, 1
+	#mul $t7, $t7, 2
+	sll $t7, $t7, 1
 	div $t0, $t8, $t6	#x_c
 	div $t1, $t7, $t6	#y_c
 	andi $t2, $t0, 1
@@ -493,12 +503,24 @@ loop_drawing:
 	subu $t0, $zero, $s6
 	addiu $a2, $a2, 1
 	addiu $a3, $a3, 1
-	jal evaluate_point
+	#jal evaluate_point
+	mul $t1, $a0, $a1	# a*x
+	mul $t2, $a2, $a3	# b*y
+	addu $t1, $t1, $t2	# a*x+b*y
+	addu $t1, $t1, $t0	# a*x+b*y+c
+	move $v0, $t1
+	
 	abs $s5, $v0
 	
 	addiu $a0, $a0, -1
 	addiu $a1, $a1, -1
-	jal evaluate_point
+	#jal evaluate_point
+	mul $t1, $a0, $a1	# a*x
+	mul $t2, $a2, $a3	# b*y
+	addu $t1, $t1, $t2	# a*x+b*y
+	addu $t1, $t1, $t0	# a*x+b*y+c
+	move $v0, $t1
+	
 	abs $s4, $v0
 	
 	
@@ -574,7 +596,6 @@ draw_line:
 #punkt, który jest bli¿ej bêdziemy wybieraæ przez wstawienie dwóch mo¿liwych nastêpnych do równania prostej
 #i porównuj¹c otrzymane wyniki, wynik o mniejszej wartoœci bezwzglêdnej jest punktem, gdzie chcemy siê znaleŸæ
 	blez $t0, x_negative
-	b x_positive
 	
 x_positive:
 	li $t4, 1
@@ -583,20 +604,17 @@ x_positive:
 x_negative:
 	li $t4, -1
 	blez $t1, y_negative
-	b y_positive
 	
 y_positive:
 	li $t5, 1
 	b find_other_vector
 y_negative:	
 	li $t5, -1
-	b find_other_vector
 	
 find_other_vector:
 	abs $t6, $t0
 	abs $t7, $t1
 	ble $t6, $t7, y_grater
-	b x_grater
 	
 x_grater:
 	div $t6, $t0, $t6
@@ -605,7 +623,6 @@ x_grater:
 y_grater:
 	div $t7, $t1, $t7
 	move $t6, $zero
-	b find_line
 
 find_line:
 #wrzucamy do odpowiednich rejestrów a i b prostej, po której siê ruszamy
@@ -630,7 +647,14 @@ loop_line:
 
 	addu $a1, $a1, $t4
 	addu $a3, $a3, $t5
-	jal evaluate_point
+	
+	#jal evaluate_point
+	mul $t1, $a0, $a1	# a*x
+	mul $t2, $a2, $a3	# b*y
+	addu $t1, $t1, $t2	# a*x+b*y
+	addu $t1, $t1, $t0	# a*x+b*y+c
+	move $v0, $t1
+	
 	abs $t8, $v0
 	subu $a1, $a1, $t4
 	subu $a3, $a3, $t5
@@ -638,26 +662,20 @@ loop_line:
 	
 	addu $a1, $a1, $t6
 	addu $a3, $a3, $t7
-	jal evaluate_point
+	
+	#jal evaluate_point
+	mul $t1, $a0, $a1	# a*x
+	mul $t2, $a2, $a3	# b*y
+	addu $t1, $t1, $t2	# a*x+b*y
+	addu $t1, $t1, $t0	# a*x+b*y+c
+	move $v0, $t1
+	
 	subu $a1, $a1, $t6
 	subu $a3, $a3, $t7
 
 	abs $v0, $v0
 	blt $t8, $v0 go_diag
-	b go_vh
 	
-go_diag:
-	addu $a1, $a1, $t4
-	addu $a3, $a3, $t5
-	sw $a1, c_x
-	sw $a3, c_y
-	
-
-	lw $t1, e_x
-	lw $t2, e_y
-	bne $a1, $t1, loop_line
-	bne $a3, $t2, loop_line
-	b end_line
 go_vh:
 	addu $a1, $a1, $t6
 	addu $a3, $a3, $t7
@@ -670,6 +688,19 @@ go_vh:
 	bne $a1, $t1, loop_line
 	bne $a3, $t2, loop_line
 	b end_line
+	
+go_diag:
+	addu $a1, $a1, $t4
+	addu $a3, $a3, $t5
+	sw $a1, c_x
+	sw $a3, c_y
+	
+
+	lw $t1, e_x
+	lw $t2, e_y
+	bne $a1, $t1, loop_line
+	bne $a3, $t2, loop_line
+
 	
 end_line:
 	jr $t9
@@ -794,7 +825,6 @@ rest_6:
 	b color
 rest_7:
 	and $t3, $t3, 0xFE
-	b color
 color:
 	sb $t3, ($t1)
 	jr $ra
