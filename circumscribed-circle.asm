@@ -744,33 +744,22 @@ no_switcheroo:
 	move $t9, $ra
 	
 	
-	lw $t2, res_w
-	lw $t3, res_h
-	bgt $t3, $a3, y_ok
-	#wyœwietlamy komunikat, zamykamy pliki, zapisujemy dotychczasow¹ pracê i koñczymy dzia³anie programu
-	li $v0, 4
-	la $a0, error_circle
-	syscall
 
-	b end_program
 	
 	
-y_ok:
-	
-	bgt $t2, $a1, x_ok
-	#wyœwietlamy komunikat, zamykamy pliki, zapisujemy dotychczasow¹ pracê i koñczymy dzia³anie programu
-	li $v0, 4
-	la $a0, error_circle
-	syscall
-	
-	b end_program
-	
-	
-x_ok:
+
 	move $a1, $t0
 	move $a3, $t1
-	jal colour_point
 	
+	lw $t2, res_w
+	lw $t3, res_h
+	bgt $a3, $t3, dont_colour
+	bgt $a1, $t2, dont_colour
+	bltz $a3, dont_colour
+	bltz $a1, dont_colour
+	jal colour_point
+
+dont_colour:	
 	jr $t9
 	
 	
